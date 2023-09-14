@@ -1,18 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import io from 'socket.io-client';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import EmojiPicker from 'emoji-picker-react';
+
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
-import { Box, Button, Container } from '@mui/material';
+import { Box, Button, Container, DialogContentText, Grid, Input, InputBase, Paper, TextField, Typography } from '@mui/material';
+import SendIcon from "@mui/icons-material/Send";
+
+import Messages from './Messages';
+import Header from './Header';
 
 const socket = io.connect("http://localhost:5001");
 
 const ChatPage = () => {
   const { search } = useLocation();
+  const navigate = useNavigate();
   const [params, setParams] = useState({ room: "", user: "" });
   const [state, setState] = useState([]);
   const [message, setMessage] = useState("");
   const [isOpen, setOpen] = useState(false);
+  const [users, setUsers] = useState(0);
 
 
   useEffect(() => {
@@ -23,36 +30,76 @@ const ChatPage = () => {
 
   useEffect(() => {
     socket.on('message', ({ data }) => {
-      setState((_state) => ([..._state, data]));
+      setState((_state) => [..._state, data]);
     });
   }, []);
 
-  const leftRoom = () => {};
-  const handleChange = () => {};
+  useEffect(() => {
+    socket.on('room', ({ data: { users } }) => {
+      setUsers(users.length);
+    });
+  }, []);
+
+  const leftRoom = () => {
+    socket.emit('leftRoom', { params });
+    navigate('/');
+  };
+
+  const handleChange = ({ target: { value }}) => setMessage(value);
+
   const onEmojiClick = ({ emoji }) => setMessage(`${message} ${emoji}`);
-  const handleSubmit = () => {};
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!message) return;
+
+    socket.emit('sendMessage', { message, params });
+
+    setMessage('');
+  };
 
   return (
-    <React.Fragment>
-      <Container maxWidth="md">
-        <Box sx={{ bgcolor: '#cfe8fc' }}>
-          <div>
+    <Fragment>
+      <Header />
+      <Container maxWidth='md'>
+        <Box sx={{
+          bgcolor: 'grey.200',
+          height: '600px',
+          mt: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          }}>
+            <Typography
+              sx={{ textAlign: 'center' }}
+              variant='h7'
+            >
             {params.room}
-          </div>
-          <div>
-            0 users in this room
-          </div>
-          <div>
-            {state.map(({ message }, i) => <span key={i}>{message}</span>)}
-          </div>
+            </Typography>
+            
+            <Typography
+              sx={{ textAlign: 'center' }}
+              variant='h7'
+            >
+            {users} users in this room
+            </Typography>      
+        <Box sx={{ flexGrow: 1, overflow: "auto", p: 1 }}>
+          <Messages messages={state} name={params.name} />
+        </Box>
+
+        <Box sx={{ p: 2, backgroundColor: "background.default" }}>
           <Button variant="contained" onClick={leftRoom}>
             Left the room
           </Button>
         </Box>
-        <form>
-          <div>
-            <input
-              type="text"
+
+        <Paper
+          component='form'
+          sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: '400' }}
+          onSubmit={handleSubmit}>
+
+            <InputBase
+              sx={{ ml: 1, flex: 1 }}
               name="message"
               value={message}
               placeholder="What do you want to say?"
@@ -60,10 +107,9 @@ const ChatPage = () => {
               required
               onChange={handleChange}
             />
-          </div>
           
           <div>
-            <EmojiEmotionsIcon color="info" onClick={() => setOpen(!isOpen)} />
+            <EmojiEmotionsIcon sx={{ mr: 2 }} color="info" onClick={() => setOpen(!isOpen)} />
 
             {isOpen && (
               <div>
@@ -72,12 +118,12 @@ const ChatPage = () => {
             )}
           </div>
 
-          <div>
-            <input type="submit" onSubmit={handleSubmit} value="Send a message" />
-          </div>
-        </form>
+          
+            <Button color='primary' variant='contained' endIcon={<SendIcon />} onSubmit={handleSubmit} />
+        </Paper>
+        </Box>
       </Container>
-    </React.Fragment>
+    </Fragment>
   );
 };
 

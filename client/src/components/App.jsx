@@ -1,9 +1,12 @@
 import React from 'react';
 import AppRoutes from './AppRoutes';
+import { Container } from '@mui/material';
 
 const App = () => {
   return (
-    <AppRoutes />
+    <Container>
+      <AppRoutes />
+    </Container>
   )
 }
 

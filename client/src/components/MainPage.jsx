@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import Header from './Header';
+import { Avatar, Button, Checkbox, FormControlLabel, Grid, Paper, TextField, Typography } from '@mui/material';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 const FIELDS = {
   NAME: "name",
@@ -25,50 +27,58 @@ const MainPage = () => {
     };
   };
 
-  return (
-    <>
-    <Header />
-    <div className=''>
-      <div>
-        <h1 className=''>Join</h1>
+  const paperStyle = { padding: 20, height: '70vh', width: 280, margin: "20px auto" };
 
-        <form>
-          <div>
-            <input
-              type="text"
-              name="name"
-              value={values[NAME]}
-              placeholder="Username"
-              className=""
-              autoComplete="off"
-              required
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <input
-              type="text"
-              name="room"
-              value={values[ROOM]}
-              placeholder="Room"
-              className=""
-              autoComplete="off"
-              required
-              onChange={handleChange}
-            />
-          </div>
-          <Link
-            onClick={handleClick}
-            to={`/chat?name=${values[NAME]}&room=${values[ROOM]}`}
-          >
-            <button type="submit" className="">
-              Sign In
-            </button>
-          </Link>
-        </form>
-      </div>
-    </div>
-    </>
+  return (
+    <Fragment>
+      <Header />
+      <Grid>
+        <Paper elevation={10} style={paperStyle}>
+        <Grid align='center'>
+          <Avatar sx={{ backgroundColor:'#1bbd7e' }}><LockOutlinedIcon/></Avatar>
+          <Typography variant='h4' sx={{ mt: '20px' }}>Join chat</Typography>
+        </Grid>
+
+        <TextField
+          type="text"
+          name="name"
+          value={values[NAME]}
+          placeholder="Username"
+          autoComplete="off"
+          required
+          fullWidth
+          onChange={handleChange}
+          sx={{
+            mt: '50px',
+            mb: '20px'
+          }}
+        />
+
+        <TextField
+          type="text"
+          name="room"
+          value={values[ROOM]}
+          placeholder="Room"
+          autoComplete="off"
+          required
+          fullWidth
+          onChange={handleChange}
+          sx={{
+            mb: '20px'
+          }}
+        />
+          <FormControlLabel control={<Checkbox name='checkedB' color='primary' />} label='Remember me' />
+            <Link
+              onClick={handleClick}
+              to={`/chat?name=${values[NAME]}&room=${values[ROOM]}`}
+            >
+              <Button variant='contained' color='primary'>
+                Sign In
+              </Button>
+            </Link>
+        </Paper>
+      </Grid>
+    </Fragment>
   );
 };
 
